@@ -98,6 +98,13 @@ def init_db():
         FOREIGN KEY (category_id) REFERENCES categories(id)
     )''')
     
+    # Tabela de configurações (para persistir toggles)
+    c.execute('''CREATE TABLE IF NOT EXISTS config (
+        key TEXT PRIMARY KEY,
+        value TEXT NOT NULL,
+        updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    )''')
+    
     # Tabela de mensagens do ticket
     c.execute('''CREATE TABLE IF NOT EXISTS ticket_messages (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -619,27 +626,43 @@ def send_panel_to_discord():
 # CONFIGURAÇÕES DE SISTEMAS (Welcome, Tickets, etc)
 # =====================================================
 def load_welcome_config():
-    """Carrega configurações do welcome_config.json"""
+    """Carrega configurações do banco de dados"""
     try:
-        if os.path.exists('welcome_config.json'):
-            with open('welcome_config.json', 'r', encoding='utf-8') as f:
-                return json.load(f)
+        conn = sqlite3.connect('tickets.db')
+        c = conn.cursor()
+        c.execute("SELECT value FROM config WHERE key = 'welcome_config'")
+        result = c.fetchone()
+        conn.close()
+        
+        if result:
+            return json.loads(result[0])
     except:
         pass
     
     # Padrão se não existir
-    return {
+    default_config = {
         'welcome_enabled': True,
         'goodbye_enabled': True,
         'autorole_enabled': True,
         'tickets_enabled': True,
         'status_message_id': None
     }
+    save_welcome_config(default_config)  # Salvar no DB
+    return default_config
 
 def save_welcome_config(config):
-    """Salva configurações no welcome_config.json"""
-    with open('welcome_config.json', 'w', encoding='utf-8') as f:
-        json.dump(config, f, indent=4, ensure_ascii=False)
+    """Salva configurações no banco de dados"""
+    try:
+        conn = sqlite3.connect('tickets.db')
+        c = conn.cursor()
+        c.execute('''
+            INSERT OR REPLACE INTO config (key, value) 
+            VALUES ('welcome_config', ?)
+        ''', (json.dumps(config),))
+        conn.commit()
+        conn.close()
+    except Exception as e:
+        print(f"Erro ao salvar config: {e}")
 
 @app.route('/config')
 @staff_required
