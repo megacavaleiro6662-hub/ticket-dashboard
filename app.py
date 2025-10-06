@@ -29,12 +29,12 @@ DISCORD_API_URL = 'https://discord.com/api/v10'
 OAUTH2_URL = f'{DISCORD_API_URL}/oauth2/authorize'
 TOKEN_URL = f'{DISCORD_API_URL}/oauth2/token'
 
-# IDs dos cargos permitidos (apenas staff pode acessar)
+# IDs dos cargos permitidos (apenas staff para cima)
 ALLOWED_ROLES = [
+    1365636960651051069,  # 🔥 Founder (mais alto)
+    1365636456386789437,  # 🌟 Sub-Dono
     1365633918593794079,  # 👑 Administrador
     1365634226254254150,  # 🛠️ Staff
-    1365633102973763595,  # 🛡️ Moderador
-    1365631940434333748,  # 🔰 Sub-Moderador
 ]
 
 GUILD_ID = os.getenv('GUILD_ID', '1365510151884378214')
