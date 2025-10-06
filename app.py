@@ -689,9 +689,8 @@ def toggle_system(system):
         return jsonify({'success': False, 'message': str(e)}), 500
 
 @app.route('/api/config/status')
-@staff_required
 def get_config_status():
-    """Retorna o status atual de todos os sistemas"""
+    """Retorna o status atual de todos os sistemas (público para o bot acessar)"""
     config = load_welcome_config()
     return jsonify(config)
 
