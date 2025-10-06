@@ -527,13 +527,15 @@ def handle_ticket_update(data):
 # =====================================================
 # INICIALIZAÇÃO
 # =====================================================
+# Inicializar banco de dados sempre
+init_db()
+
 if __name__ == '__main__':
-    print("🚀 Iniciando CAOS Ticket Dashboard...")
-    init_db()
-    
+    # Modo desenvolvimento (local)
     port = int(os.getenv('PORT', 5000))
     debug = os.getenv('DEBUG', 'False') == 'True'
     
+    print("🚀 Iniciando CAOS Ticket Dashboard...")
     print(f"✅ Dashboard rodando em http://localhost:{port}")
     print(f"🔐 Configure as variáveis de ambiente:")
     print(f"   - DISCORD_CLIENT_ID")
@@ -542,3 +544,6 @@ if __name__ == '__main__':
     print(f"   - GUILD_ID")
     
     socketio.run(app, host='0.0.0.0', port=port, debug=debug)
+else:
+    # Modo produção (Gunicorn)
+    print("✅ Dashboard iniciado em modo produção")
