@@ -616,6 +616,86 @@ def send_panel_to_discord():
     })
 
 # =====================================================
+# CONFIGURAÇÕES DE SISTEMAS (Welcome, Tickets, etc)
+# =====================================================
+def load_welcome_config():
+    """Carrega configurações do welcome_config.json"""
+    try:
+        if os.path.exists('welcome_config.json'):
+            with open('welcome_config.json', 'r', encoding='utf-8') as f:
+                return json.load(f)
+    except:
+        pass
+    
+    # Padrão se não existir
+    return {
+        'welcome_enabled': True,
+        'goodbye_enabled': True,
+        'autorole_enabled': True,
+        'tickets_enabled': True,
+        'status_message_id': None
+    }
+
+def save_welcome_config(config):
+    """Salva configurações no welcome_config.json"""
+    with open('welcome_config.json', 'w', encoding='utf-8') as f:
+        json.dump(config, f, indent=4, ensure_ascii=False)
+
+@app.route('/config')
+@staff_required
+def config_page():
+    """Página de configurações dos sistemas"""
+    welcome_config = load_welcome_config()
+    return render_template('config.html', user=session['user'], config=welcome_config)
+
+@app.route('/api/config/toggle/<system>', methods=['POST'])
+@staff_required
+def toggle_system(system):
+    """Liga/desliga sistemas (welcome, goodbye, autorole, tickets)"""
+    try:
+        config = load_welcome_config()
+        
+        if system == 'welcome':
+            config['welcome_enabled'] = not config.get('welcome_enabled', True)
+            message = f"Sistema de boas-vindas: {'✅ ATIVADO' if config['welcome_enabled'] else '❌ DESATIVADO'}"
+        
+        elif system == 'goodbye':
+            config['goodbye_enabled'] = not config.get('goodbye_enabled', True)
+            message = f"Sistema de saída/ban: {'✅ ATIVADO' if config['goodbye_enabled'] else '❌ DESATIVADO'}"
+        
+        elif system == 'autorole':
+            config['autorole_enabled'] = not config.get('autorole_enabled', True)
+            message = f"Sistema de autorole: {'✅ ATIVADO' if config['autorole_enabled'] else '❌ DESATIVADO'}"
+        
+        elif system == 'tickets':
+            config['tickets_enabled'] = not config.get('tickets_enabled', True)
+            message = f"Sistema de tickets: {'✅ ATIVADO' if config['tickets_enabled'] else '❌ DESATIVADO'}"
+        
+        else:
+            return jsonify({'success': False, 'message': 'Sistema inválido'}), 400
+        
+        save_welcome_config(config)
+        
+        # TODO: Aqui você pode fazer uma requisição para o bot atualizar o painel no Discord
+        # usando webhook ou API do bot
+        
+        return jsonify({
+            'success': True,
+            'message': message,
+            'enabled': config.get(f'{system}_enabled', False)
+        })
+    
+    except Exception as e:
+        return jsonify({'success': False, 'message': str(e)}), 500
+
+@app.route('/api/config/status')
+@staff_required
+def get_config_status():
+    """Retorna o status atual de todos os sistemas"""
+    config = load_welcome_config()
+    return jsonify(config)
+
+# =====================================================
 # INICIALIZAÇÃO
 # =====================================================
 # Inicializar banco de dados sempre

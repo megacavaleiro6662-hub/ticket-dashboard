@@ -1,0 +1,270 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Configurações - CAOS Ticket Manager</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-100">
+    <!-- Navbar -->
+    <nav class="bg-white shadow-lg">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between h-16">
+                <div class="flex items-center">
+                    <div class="flex-shrink-0 flex items-center">
+                        <span class="text-3xl">🎫</span>
+                        <span class="ml-2 text-xl font-bold text-gray-800">CAOS Ticket Manager</span>
+                    </div>
+                    
+                    <div class="hidden md:ml-10 md:flex md:space-x-4">
+                        <a href="/dashboard" class="text-gray-700 hover:bg-gray-100 px-3 py-2 rounded-md text-sm font-medium">
+                            📊 Dashboard
+                        </a>
+                        <a href="/categories" class="text-gray-700 hover:bg-gray-100 px-3 py-2 rounded-md text-sm font-medium">
+                            🏷️ Categorias
+                        </a>
+                        <a href="/panels" class="text-gray-700 hover:bg-gray-100 px-3 py-2 rounded-md text-sm font-medium">
+                            🎨 Painéis
+                        </a>
+                        <a href="/config" class="bg-orange-100 text-orange-700 px-3 py-2 rounded-md text-sm font-medium">
+                            ⚙️ Configurações
+                        </a>
+                    </div>
+                </div>
+                
+                <div class="flex items-center">
+                    <div class="flex items-center space-x-3">
+                        <div class="text-right">
+                            <p class="text-sm font-medium text-gray-700">{{ user.username }}</p>
+                            <p class="text-xs text-gray-500">Staff</p>
+                        </div>
+                        {% if user.avatar %}
+                        <img class="h-10 w-10 rounded-full" src="https://cdn.discordapp.com/avatars/{{ user.id }}/{{ user.avatar }}.png" alt="Avatar">
+                        {% else %}
+                        <div class="h-10 w-10 rounded-full bg-gradient-to-br from-orange-400 to-pink-500 flex items-center justify-center text-white font-bold">
+                            {{ user.username[0] }}
+                        </div>
+                        {% endif %}
+                        <a href="/logout" class="ml-3 text-gray-600 hover:text-red-600 text-sm font-medium">
+                            Sair
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        
+        <!-- Header -->
+        <div class="mb-8">
+            <h1 class="text-3xl font-bold text-gray-900">⚙️ Configurações do Sistema</h1>
+            <p class="text-gray-600 mt-2">Gerencie os sistemas de automação do servidor</p>
+        </div>
+
+        <!-- Notification Area -->
+        <div id="notificationArea"></div>
+
+        <!-- Systems Grid -->
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            
+            <!-- Welcome System -->
+            <div class="bg-white rounded-lg shadow-lg p-6">
+                <div class="flex justify-between items-start mb-4">
+                    <div>
+                        <h3 class="text-xl font-bold text-gray-900 flex items-center">
+                            👋 <span class="ml-2">Boas-vindas</span>
+                        </h3>
+                        <p class="text-sm text-gray-600 mt-1">Mensagens de boas-vindas quando membros entram</p>
+                    </div>
+                    <label class="relative inline-flex items-center cursor-pointer">
+                        <input type="checkbox" id="toggle-welcome" class="sr-only peer" {% if config.welcome_enabled %}checked{% endif %}>
+                        <div class="w-14 h-7 bg-gray-300 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-orange-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-0.5 after:left-[4px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-6 after:w-6 after:transition-all peer-checked:bg-orange-500"></div>
+                    </label>
+                </div>
+                <div class="mt-4 p-3 bg-gray-50 rounded-lg">
+                    <p class="text-sm font-semibold text-gray-700">Status:</p>
+                    <p class="text-lg font-bold" id="welcome-status">
+                        {% if config.welcome_enabled %}
+                        <span class="text-green-600">✅ Online</span>
+                        {% else %}
+                        <span class="text-red-600">❌ Offline</span>
+                        {% endif %}
+                    </p>
+                </div>
+            </div>
+
+            <!-- Goodbye System -->
+            <div class="bg-white rounded-lg shadow-lg p-6">
+                <div class="flex justify-between items-start mb-4">
+                    <div>
+                        <h3 class="text-xl font-bold text-gray-900 flex items-center">
+                            👋 <span class="ml-2">Saída/Ban</span>
+                        </h3>
+                        <p class="text-sm text-gray-600 mt-1">Mensagens quando membros saem ou são banidos</p>
+                    </div>
+                    <label class="relative inline-flex items-center cursor-pointer">
+                        <input type="checkbox" id="toggle-goodbye" class="sr-only peer" {% if config.goodbye_enabled %}checked{% endif %}>
+                        <div class="w-14 h-7 bg-gray-300 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-orange-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-0.5 after:left-[4px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-6 after:w-6 after:transition-all peer-checked:bg-orange-500"></div>
+                    </label>
+                </div>
+                <div class="mt-4 p-3 bg-gray-50 rounded-lg">
+                    <p class="text-sm font-semibold text-gray-700">Status:</p>
+                    <p class="text-lg font-bold" id="goodbye-status">
+                        {% if config.goodbye_enabled %}
+                        <span class="text-green-600">✅ Online</span>
+                        {% else %}
+                        <span class="text-red-600">❌ Offline</span>
+                        {% endif %}
+                    </p>
+                </div>
+            </div>
+
+            <!-- Autorole System -->
+            <div class="bg-white rounded-lg shadow-lg p-6">
+                <div class="flex justify-between items-start mb-4">
+                    <div>
+                        <h3 class="text-xl font-bold text-gray-900 flex items-center">
+                            🎭 <span class="ml-2">Autorole</span>
+                        </h3>
+                        <p class="text-sm text-gray-600 mt-1">Dar cargo automaticamente para novos membros</p>
+                    </div>
+                    <label class="relative inline-flex items-center cursor-pointer">
+                        <input type="checkbox" id="toggle-autorole" class="sr-only peer" {% if config.autorole_enabled %}checked{% endif %}>
+                        <div class="w-14 h-7 bg-gray-300 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-orange-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-0.5 after:left-[4px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-6 after:w-6 after:transition-all peer-checked:bg-orange-500"></div>
+                    </label>
+                </div>
+                <div class="mt-4 p-3 bg-gray-50 rounded-lg">
+                    <p class="text-sm font-semibold text-gray-700">Status:</p>
+                    <p class="text-lg font-bold" id="autorole-status">
+                        {% if config.autorole_enabled %}
+                        <span class="text-green-600">✅ Online</span>
+                        {% else %}
+                        <span class="text-red-600">❌ Offline</span>
+                        {% endif %}
+                    </p>
+                </div>
+            </div>
+
+            <!-- Tickets System -->
+            <div class="bg-white rounded-lg shadow-lg p-6">
+                <div class="flex justify-between items-start mb-4">
+                    <div>
+                        <h3 class="text-xl font-bold text-gray-900 flex items-center">
+                            🎫 <span class="ml-2">Tickets</span>
+                        </h3>
+                        <p class="text-sm text-gray-600 mt-1">Sistema de tickets de suporte</p>
+                    </div>
+                    <label class="relative inline-flex items-center cursor-pointer">
+                        <input type="checkbox" id="toggle-tickets" class="sr-only peer" {% if config.tickets_enabled %}checked{% endif %}>
+                        <div class="w-14 h-7 bg-gray-300 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-orange-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-0.5 after:left-[4px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-6 after:w-6 after:transition-all peer-checked:bg-orange-500"></div>
+                    </label>
+                </div>
+                <div class="mt-4 p-3 bg-gray-50 rounded-lg">
+                    <p class="text-sm font-semibold text-gray-700">Status:</p>
+                    <p class="text-lg font-bold" id="tickets-status">
+                        {% if config.tickets_enabled %}
+                        <span class="text-green-600">✅ Online</span>
+                        {% else %}
+                        <span class="text-red-600">❌ Offline</span>
+                        {% endif %}
+                    </p>
+                </div>
+            </div>
+
+        </div>
+
+        <!-- Info Box -->
+        <div class="mt-8 bg-blue-50 border-l-4 border-blue-500 p-6 rounded-lg">
+            <div class="flex">
+                <div class="flex-shrink-0">
+                    <svg class="h-6 w-6 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                    </svg>
+                </div>
+                <div class="ml-3">
+                    <h3 class="text-sm font-medium text-blue-800">Informação</h3>
+                    <p class="mt-2 text-sm text-blue-700">
+                        As alterações são aplicadas instantaneamente. O painel de status no canal do Discord será atualizado automaticamente.
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Função para fazer toggle
+        async function toggleSystem(system, checkbox, statusElement) {
+            try {
+                const response = await fetch(`/api/config/toggle/${system}`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    }
+                });
+
+                const data = await response.json();
+
+                if (data.success) {
+                    // Atualizar status visual
+                    if (data.enabled) {
+                        statusElement.innerHTML = '<span class="text-green-600">✅ Online</span>';
+                    } else {
+                        statusElement.innerHTML = '<span class="text-red-600">❌ Offline</span>';
+                    }
+
+                    // Mostrar notificação de sucesso
+                    showNotification(data.message, 'success');
+                } else {
+                    // Reverter checkbox se falhou
+                    checkbox.checked = !checkbox.checked;
+                    showNotification(data.message, 'error');
+                }
+            } catch (error) {
+                // Reverter checkbox se erro
+                checkbox.checked = !checkbox.checked;
+                showNotification('❌ Erro ao atualizar sistema', 'error');
+                console.error('Erro:', error);
+            }
+        }
+
+        // Função para mostrar notificações
+        function showNotification(message, type) {
+            const notificationArea = document.getElementById('notificationArea');
+            const notification = document.createElement('div');
+            
+            const bgColor = type === 'success' ? 'bg-green-100 border-green-500' : 'bg-red-100 border-red-500';
+            const textColor = type === 'success' ? 'text-green-700' : 'text-red-700';
+            
+            notification.className = `mb-4 border-l-4 p-4 rounded-lg ${bgColor} ${textColor} animate-pulse`;
+            notification.textContent = message;
+            
+            notificationArea.appendChild(notification);
+
+            // Remover após 3 segundos
+            setTimeout(() => {
+                notification.remove();
+            }, 3000);
+        }
+
+        // Event listeners para os toggles
+        document.getElementById('toggle-welcome').addEventListener('change', function() {
+            toggleSystem('welcome', this, document.getElementById('welcome-status'));
+        });
+
+        document.getElementById('toggle-goodbye').addEventListener('change', function() {
+            toggleSystem('goodbye', this, document.getElementById('goodbye-status'));
+        });
+
+        document.getElementById('toggle-autorole').addEventListener('change', function() {
+            toggleSystem('autorole', this, document.getElementById('autorole-status'));
+        });
+
+        document.getElementById('toggle-tickets').addEventListener('change', function() {
+            toggleSystem('tickets', this, document.getElementById('tickets-status'));
+        });
+    </script>
+</body>
+</html>
