@@ -15,6 +15,7 @@ import secrets
 
 app = Flask(__name__)
 app.config['SECRET_KEY'] = os.getenv('SECRET_KEY', secrets.token_hex(32))
+app.config['PERMANENT_SESSION_LIFETIME'] = timedelta(hours=1)  # Sessão expira em 1 hora
 CORS(app)
 
 # =====================================================
@@ -262,20 +263,96 @@ def callback():
     
     return redirect(url_for('dashboard'))
 
-@app.route('/logout')
-def logout():
-    """Logout"""
-    session.clear()
-    return redirect(url_for('login'))
-
 # =====================================================
 # ROTAS DO DASHBOARD
 # =====================================================
+@app.route('/logout')
+def logout():
+    """Fazer logout e limpar sessão"""
+    session.clear()
+    return redirect(url_for('login'))
+
 @app.route('/dashboard')
 @staff_required
 def dashboard():
     """Dashboard principal"""
     return render_template('dashboard.html', user=session['user'])
+
+# =====================================================
+# APIs PARA DROPDOWNS (Buscar dados do Discord)
+# =====================================================
+@app.route('/api/discord/channels')
+@staff_required
+def get_discord_channels():
+    """Busca todos os canais do servidor"""
+    try:
+        response = requests.get(
+            f'{DISCORD_API_URL}/guilds/{GUILD_ID}/channels',
+            headers={'Authorization': f"Bot {DISCORD_BOT_TOKEN}"}
+        )
+        
+        if response.status_code == 200:
+            channels = response.json()
+            # Filtrar apenas canais de texto
+            text_channels = [
+                {'id': ch['id'], 'name': ch['name'], 'type': ch['type']}
+                for ch in channels
+                if ch['type'] in [0, 5]  # 0 = text, 5 = announcement
+            ]
+            return jsonify(text_channels)
+        
+        return jsonify({'error': 'Erro ao buscar canais'}), 500
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+@app.route('/api/discord/categories')
+@staff_required
+def get_discord_categories():
+    """Busca todas as categorias do servidor"""
+    try:
+        response = requests.get(
+            f'{DISCORD_API_URL}/guilds/{GUILD_ID}/channels',
+            headers={'Authorization': f"Bot {DISCORD_BOT_TOKEN}"}
+        )
+        
+        if response.status_code == 200:
+            channels = response.json()
+            # Filtrar apenas categorias
+            categories = [
+                {'id': ch['id'], 'name': ch['name']}
+                for ch in channels
+                if ch['type'] == 4  # 4 = category
+            ]
+            return jsonify(categories)
+        
+        return jsonify({'error': 'Erro ao buscar categorias'}), 500
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+@app.route('/api/discord/roles')
+@staff_required
+def get_discord_roles():
+    """Busca todos os cargos do servidor"""
+    try:
+        response = requests.get(
+            f'{DISCORD_API_URL}/guilds/{GUILD_ID}/roles',
+            headers={'Authorization': f"Bot {DISCORD_BOT_TOKEN}"}
+        )
+        
+        if response.status_code == 200:
+            roles = response.json()
+            # Ordenar por posição
+            sorted_roles = sorted(roles, key=lambda r: r.get('position', 0), reverse=True)
+            role_list = [
+                {'id': r['id'], 'name': r['name'], 'color': r.get('color', 0)}
+                for r in sorted_roles
+                if r['name'] != '@everyone'
+            ]
+            return jsonify(role_list)
+        
+        return jsonify({'error': 'Erro ao buscar cargos'}), 500
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
 
 @app.route('/api/stats')
 @staff_required

@@ -8,13 +8,58 @@
     <style>
         body {
             background: #2f3136;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        /* Animação de partículas */
+        .particle {
+            position: absolute;
+            background: rgba(88, 101, 242, 0.3);
+            border-radius: 50%;
+            animation: float 15s infinite;
+        }
+        
+        @keyframes float {
+            0%, 100% { transform: translateY(0) translateX(0); opacity: 0; }
+            10% { opacity: 0.5; }
+            90% { opacity: 0.5; }
+            100% { transform: translateY(-100vh) translateX(100px); opacity: 0; }
+        }
+        
+        .particle:nth-child(1) { width: 80px; height: 80px; left: 10%; animation-delay: 0s; }
+        .particle:nth-child(2) { width: 60px; height: 60px; left: 25%; animation-delay: 3s; }
+        .particle:nth-child(3) { width: 100px; height: 100px; left: 50%; animation-delay: 6s; }
+        .particle:nth-child(4) { width: 70px; height: 70px; left: 75%; animation-delay: 9s; }
+        .particle:nth-child(5) { width: 90px; height: 90px; left: 85%; animation-delay: 12s; }
+        
+        /* Animação do card */
+        .login-card {
+            animation: slideUp 0.6s ease-out;
+        }
+        
+        @keyframes slideUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
         }
     </style>
 </head>
 <body class="min-h-screen flex items-center justify-center p-4">
+    <!-- Partículas animadas -->
+    <div class="particle"></div>
+    <div class="particle"></div>
+    <div class="particle"></div>
+    <div class="particle"></div>
+    <div class="particle"></div>
     <div class="max-w-md w-full">
         <!-- Card de Login -->
-        <div class="bg-[#36393f] rounded-lg shadow-xl p-8 text-center border border-[#202225]">
+        <div class="login-card bg-[#36393f] rounded-lg shadow-xl p-8 text-center border border-[#202225]">
             <!-- Logo -->
             <div class="mb-6">
                 <div class="w-20 h-20 bg-gradient-to-br from-orange-400 to-pink-500 rounded-full mx-auto flex items-center justify-center text-white text-4xl font-bold shadow-lg">
