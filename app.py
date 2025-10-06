@@ -161,7 +161,7 @@ def login():
     if 'user' in session:
         return redirect(url_for('dashboard'))
     
-    oauth_url = f"{OAUTH2_URL}?client_id={DISCORD_CLIENT_ID}&redirect_uri={DISCORD_REDIRECT_URI}&response_type=code&scope=identify%20guilds"
+    oauth_url = f"{OAUTH2_URL}?client_id={DISCORD_CLIENT_ID}&redirect_uri={DISCORD_REDIRECT_URI}&response_type=code&scope=identify%20guilds%20guilds.members.read"
     return render_template('login.html', oauth_url=oauth_url)
 
 @app.route('/callback')
