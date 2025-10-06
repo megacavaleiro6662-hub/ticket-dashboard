@@ -7,14 +7,14 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
         body {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background: #2f3136;
         }
     </style>
 </head>
 <body class="min-h-screen flex items-center justify-center p-4">
     <div class="max-w-md w-full">
         <!-- Card de Login -->
-        <div class="bg-white rounded-2xl shadow-2xl p-8 text-center">
+        <div class="bg-[#36393f] rounded-lg shadow-xl p-8 text-center border border-[#202225]">
             <!-- Logo -->
             <div class="mb-6">
                 <div class="w-20 h-20 bg-gradient-to-br from-orange-400 to-pink-500 rounded-full mx-auto flex items-center justify-center text-white text-4xl font-bold shadow-lg">
@@ -23,15 +23,15 @@
             </div>
             
             <!-- Título -->
-            <h1 class="text-3xl font-bold text-gray-800 mb-2">
+            <h1 class="text-3xl font-bold text-white mb-2">
                 CAOS Ticket Manager
             </h1>
-            <p class="text-gray-600 mb-8">
+            <p class="text-gray-400 mb-8">
                 Sistema de Gerenciamento de Tickets
             </p>
             
             <!-- Botão de Login com Discord -->
-            <a href="{{ oauth_url }}" class="block w-full bg-indigo-600 hover:bg-indigo-700 text-white font-semibold py-4 px-6 rounded-xl transition duration-300 transform hover:scale-105 shadow-lg">
+            <a href="{{ oauth_url }}" class="block w-full bg-[#5865F2] hover:bg-[#4752C4] text-white font-semibold py-4 px-6 rounded-md transition duration-200 shadow-md">
                 <div class="flex items-center justify-center space-x-3">
                     <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 24 24">
                         <path d="M20.317 4.492c-1.53-.69-3.17-1.2-4.885-1.49a.075.075 0 0 0-.079.036c-.21.369-.444.85-.608 1.23a18.566 18.566 0 0 0-5.487 0 12.36 12.36 0 0 0-.617-1.23A.077.077 0 0 0 8.562 3c-1.714.29-3.354.8-4.885 1.491a.07.07 0 0 0-.032.027C.533 9.093-.32 13.555.099 17.961a.08.08 0 0 0 .031.055 20.03 20.03 0 0 0 5.993 2.98.078.078 0 0 0 .084-.026 13.83 13.83 0 0 0 1.226-1.963.074.074 0 0 0-.041-.104 13.201 13.201 0 0 1-1.872-.878.075.075 0 0 1-.008-.125c.126-.093.252-.19.372-.287a.075.075 0 0 1 .078-.01c3.927 1.764 8.18 1.764 12.061 0a.075.075 0 0 1 .079.009c.12.098.245.195.372.288a.075.075 0 0 1-.006.125c-.598.344-1.22.635-1.873.877a.075.075 0 0 0-.041.105c.36.687.772 1.341 1.225 1.962a.077.077 0 0 0 .084.028 19.963 19.963 0 0 0 6.002-2.981.076.076 0 0 0 .032-.054c.5-5.094-.838-9.52-3.549-13.442a.06.06 0 0 0-.031-.028zM8.02 15.278c-1.182 0-2.157-1.069-2.157-2.38 0-1.312.956-2.38 2.157-2.38 1.21 0 2.176 1.077 2.157 2.38 0 1.312-.956 2.38-2.157 2.38zm7.975 0c-1.183 0-2.157-1.069-2.157-2.38 0-1.312.955-2.38 2.157-2.38 1.21 0 2.176 1.077 2.157 2.38 0 1.312-.946 2.38-2.157 2.38z"/>
@@ -41,16 +41,16 @@
             </a>
             
             <!-- Informações -->
-            <div class="mt-8 p-4 bg-blue-50 rounded-xl">
-                <p class="text-sm text-blue-800">
-                    <strong>🔒 Acesso Restrito</strong><br>
-                    Apenas membros da staff podem acessar este dashboard.
+            <div class="mt-8 p-4 bg-[#2f3136] rounded-md border border-[#202225]">
+                <p class="text-sm text-gray-300">
+                    <strong class="text-yellow-400">🔒 Acesso Restrito</strong><br>
+                    Apenas Staff e superiores podem acessar.
                 </p>
             </div>
         </div>
         
         <!-- Footer -->
-        <div class="text-center mt-6 text-white text-sm">
+        <div class="text-center mt-6 text-gray-400 text-sm">
             <p>© 2025 CAOS Hub - Sistema de Tickets Profissional</p>
         </div>
     </div>

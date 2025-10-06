@@ -204,16 +204,30 @@ def callback():
         headers={'Authorization': f"Bearer {access_token}"}
     )
     
+    # Verificar se é o dono do servidor
+    guild_info = requests.get(
+        f'{DISCORD_API_URL}/guilds/{GUILD_ID}',
+        headers={'Authorization': f"Bot {DISCORD_BOT_TOKEN}"}
+    )
+    
+    is_owner = False
+    if guild_info.status_code == 200:
+        guild_data = guild_info.json()
+        is_owner = str(guild_data.get('owner_id')) == str(user_data['id'])
+    
+    # Obter cargos do usuário
     user_roles = []
     if guild_response.status_code == 200:
         member_data = guild_response.json()
         user_roles = [int(role) for role in member_data.get('roles', [])]
     
-    # Verificar se tem permissão
-    if not any(role in ALLOWED_ROLES for role in user_roles):
+    # Verificar se tem permissão (Owner OU Staff)
+    has_permission = is_owner or any(role in ALLOWED_ROLES for role in user_roles)
+    
+    if not has_permission:
         return render_template('error.html', 
             message="Acesso Negado", 
-            details="Você não tem permissão para acessar o dashboard. Apenas membros da staff podem acessar."
+            details="Você não tem permissão para acessar o dashboard. Apenas Staff e superiores podem acessar."
         )
     
     # Salvar na sessão
