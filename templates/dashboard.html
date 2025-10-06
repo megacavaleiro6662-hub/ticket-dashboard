@@ -1,0 +1,416 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard - CAOS Ticket Manager</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.socket.io/4.5.4/socket.io.min.js"></script>
+</head>
+<body class="bg-gray-100">
+    <!-- Navbar -->
+    <nav class="bg-white shadow-lg">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between h-16">
+                <div class="flex items-center">
+                    <div class="flex-shrink-0 flex items-center">
+                        <span class="text-3xl">🎫</span>
+                        <span class="ml-2 text-xl font-bold text-gray-800">CAOS Ticket Manager</span>
+                    </div>
+                    
+                    <!-- Menu de Navegação -->
+                    <div class="hidden md:ml-10 md:flex md:space-x-4">
+                        <a href="/dashboard" class="bg-orange-100 text-orange-700 px-3 py-2 rounded-md text-sm font-medium">
+                            📊 Dashboard
+                        </a>
+                        <a href="/categories" class="text-gray-700 hover:bg-gray-100 px-3 py-2 rounded-md text-sm font-medium">
+                            🏷️ Categorias
+                        </a>
+                        <a href="/panels" class="text-gray-700 hover:bg-gray-100 px-3 py-2 rounded-md text-sm font-medium">
+                            🎨 Painéis
+                        </a>
+                        <a href="#" onclick="showSettings()" class="text-gray-700 hover:bg-gray-100 px-3 py-2 rounded-md text-sm font-medium">
+                            ⚙️ Configurações
+                        </a>
+                    </div>
+                </div>
+                
+                <!-- User Menu -->
+                <div class="flex items-center">
+                    <div class="flex items-center space-x-3">
+                        <div class="text-right">
+                            <p class="text-sm font-medium text-gray-700">{{ user.username }}</p>
+                            <p class="text-xs text-gray-500">Staff</p>
+                        </div>
+                        {% if user.avatar %}
+                        <img class="h-10 w-10 rounded-full" src="https://cdn.discordapp.com/avatars/{{ user.id }}/{{ user.avatar }}.png" alt="Avatar">
+                        {% else %}
+                        <div class="h-10 w-10 rounded-full bg-gradient-to-br from-orange-400 to-pink-500 flex items-center justify-center text-white font-bold">
+                            {{ user.username[0] }}
+                        </div>
+                        {% endif %}
+                        <a href="/logout" class="ml-3 text-gray-600 hover:text-red-600 text-sm font-medium">
+                            Sair
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        
+        <!-- Stats Cards -->
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-6 gap-4 mb-8">
+            <!-- Total -->
+            <div class="bg-white rounded-lg shadow p-6">
+                <div class="flex items-center">
+                    <div class="flex-shrink-0 bg-blue-100 rounded-lg p-3">
+                        <span class="text-2xl">📋</span>
+                    </div>
+                    <div class="ml-4">
+                        <p class="text-sm text-gray-600">Total</p>
+                        <p class="text-2xl font-bold text-gray-900" id="stat-total">-</p>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Abertos -->
+            <div class="bg-white rounded-lg shadow p-6">
+                <div class="flex items-center">
+                    <div class="flex-shrink-0 bg-green-100 rounded-lg p-3">
+                        <span class="text-2xl">🟢</span>
+                    </div>
+                    <div class="ml-4">
+                        <p class="text-sm text-gray-600">Abertos</p>
+                        <p class="text-2xl font-bold text-green-600" id="stat-open">-</p>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Aguardando -->
+            <div class="bg-white rounded-lg shadow p-6">
+                <div class="flex items-center">
+                    <div class="flex-shrink-0 bg-yellow-100 rounded-lg p-3">
+                        <span class="text-2xl">⏱️</span>
+                    </div>
+                    <div class="ml-4">
+                        <p class="text-sm text-gray-600">Aguardando</p>
+                        <p class="text-2xl font-bold text-yellow-600" id="stat-waiting">-</p>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Fechados -->
+            <div class="bg-white rounded-lg shadow p-6">
+                <div class="flex items-center">
+                    <div class="flex-shrink-0 bg-gray-100 rounded-lg p-3">
+                        <span class="text-2xl">✅</span>
+                    </div>
+                    <div class="ml-4">
+                        <p class="text-sm text-gray-600">Fechados</p>
+                        <p class="text-2xl font-bold text-gray-600" id="stat-closed">-</p>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Tempo Médio -->
+            <div class="bg-white rounded-lg shadow p-6">
+                <div class="flex items-center">
+                    <div class="flex-shrink-0 bg-purple-100 rounded-lg p-3">
+                        <span class="text-2xl">⏰</span>
+                    </div>
+                    <div class="ml-4">
+                        <p class="text-sm text-gray-600">Tempo Médio</p>
+                        <p class="text-2xl font-bold text-purple-600" id="stat-time">-</p>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Taxa de Resolução -->
+            <div class="bg-white rounded-lg shadow p-6">
+                <div class="flex items-center">
+                    <div class="flex-shrink-0 bg-orange-100 rounded-lg p-3">
+                        <span class="text-2xl">📈</span>
+                    </div>
+                    <div class="ml-4">
+                        <p class="text-sm text-gray-600">Taxa</p>
+                        <p class="text-2xl font-bold text-orange-600" id="stat-rate">-</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Charts -->
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+            <!-- Gráfico de Tickets por Dia -->
+            <div class="bg-white rounded-lg shadow p-6">
+                <h3 class="text-lg font-semibold text-gray-800 mb-4">📈 Tickets por Dia (Últimos 7 dias)</h3>
+                <canvas id="ticketsChart"></canvas>
+            </div>
+            
+            <!-- Gráfico de Tickets por Categoria -->
+            <div class="bg-white rounded-lg shadow p-6">
+                <h3 class="text-lg font-semibold text-gray-800 mb-4">🏷️ Tickets por Categoria</h3>
+                <canvas id="categoriesChart"></canvas>
+            </div>
+        </div>
+
+        <!-- Tickets List -->
+        <div class="bg-white rounded-lg shadow">
+            <div class="px-6 py-4 border-b border-gray-200 flex justify-between items-center">
+                <h3 class="text-lg font-semibold text-gray-800">🎫 Tickets Ativos (Tempo Real)</h3>
+                <div class="flex space-x-2">
+                    <button onclick="filterTickets('open')" class="px-4 py-2 bg-green-100 text-green-700 rounded-lg text-sm font-medium hover:bg-green-200">
+                        🟢 Abertos
+                    </button>
+                    <button onclick="filterTickets('closed')" class="px-4 py-2 bg-gray-100 text-gray-700 rounded-lg text-sm font-medium hover:bg-gray-200">
+                        ✅ Fechados
+                    </button>
+                    <button onclick="refreshTickets()" class="px-4 py-2 bg-blue-100 text-blue-700 rounded-lg text-sm font-medium hover:bg-blue-200">
+                        🔄 Atualizar
+                    </button>
+                </div>
+            </div>
+            
+            <div class="divide-y divide-gray-200" id="ticketsList">
+                <!-- Tickets serão carregados aqui -->
+                <div class="px-6 py-8 text-center text-gray-500">
+                    <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-orange-500 mx-auto mb-4"></div>
+                    <p>Carregando tickets...</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // ==========================================
+        // WEBSOCKET - TEMPO REAL
+        // ==========================================
+        const socket = io();
+        
+        socket.on('connect', function() {
+            console.log('✅ Conectado ao servidor WebSocket');
+        });
+        
+        socket.on('ticket_created', function(data) {
+            console.log('🆕 Novo ticket criado:', data);
+            refreshStats();
+            refreshTickets();
+            showNotification('Novo ticket #' + data.ticket_number + ' criado!');
+        });
+        
+        socket.on('ticket_update', function(data) {
+            console.log('🔄 Ticket atualizado:', data);
+            refreshStats();
+            refreshTickets();
+        });
+
+        // ==========================================
+        // CARREGAR ESTATÍSTICAS
+        // ==========================================
+        async function loadStats() {
+            try {
+                const response = await fetch('/api/stats');
+                const stats = await response.json();
+                
+                document.getElementById('stat-total').textContent = stats.total;
+                document.getElementById('stat-open').textContent = stats.open;
+                document.getElementById('stat-waiting').textContent = stats.waiting;
+                document.getElementById('stat-closed').textContent = stats.closed;
+                document.getElementById('stat-time').textContent = stats.avg_time;
+                document.getElementById('stat-rate').textContent = stats.resolution_rate;
+            } catch (error) {
+                console.error('Erro ao carregar estatísticas:', error);
+            }
+        }
+
+        // ==========================================
+        // CARREGAR TICKETS
+        // ==========================================
+        let currentFilter = 'open';
+        
+        async function loadTickets(status = 'open') {
+            currentFilter = status;
+            const ticketsList = document.getElementById('ticketsList');
+            ticketsList.innerHTML = '<div class="px-6 py-8 text-center text-gray-500"><div class="animate-spin rounded-full h-12 w-12 border-b-2 border-orange-500 mx-auto mb-4"></div><p>Carregando tickets...</p></div>';
+            
+            try {
+                const response = await fetch(`/api/tickets?status=${status}`);
+                const tickets = await response.json();
+                
+                if (tickets.length === 0) {
+                    ticketsList.innerHTML = `
+                        <div class="px-6 py-8 text-center text-gray-500">
+                            <span class="text-4xl">📭</span>
+                            <p class="mt-2">Nenhum ticket ${status === 'open' ? 'aberto' : 'fechado'} no momento.</p>
+                        </div>
+                    `;
+                    return;
+                }
+                
+                ticketsList.innerHTML = tickets.map(ticket => `
+                    <div class="px-6 py-4 hover:bg-gray-50 cursor-pointer transition" onclick="viewTicket(${ticket.id})">
+                        <div class="flex items-center justify-between">
+                            <div class="flex items-center space-x-4">
+                                <div class="flex-shrink-0">
+                                    <span class="text-3xl">${ticket.category_emoji || '📋'}</span>
+                                </div>
+                                <div>
+                                    <div class="flex items-center space-x-2">
+                                        <span class="font-semibold text-gray-900">#${ticket.ticket_number}</span>
+                                        <span class="text-gray-600">@${ticket.username}</span>
+                                        <span class="px-2 py-1 text-xs rounded-full ${getPriorityColor(ticket.priority)}">
+                                            ${getPriorityLabel(ticket.priority)}
+                                        </span>
+                                    </div>
+                                    <p class="text-sm text-gray-600 mt-1">${ticket.category_name || 'Sem categoria'}</p>
+                                    <p class="text-xs text-gray-500 mt-1">
+                                        💬 ${ticket.messages_count || 0} mensagens • 
+                                        ⏱️ ${getTimeAgo(ticket.created_at)}
+                                    </p>
+                                </div>
+                            </div>
+                            <div>
+                                <button class="px-4 py-2 bg-orange-500 hover:bg-orange-600 text-white rounded-lg text-sm font-medium">
+                                    Ver Ticket →
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                `).join('');
+                
+            } catch (error) {
+                console.error('Erro ao carregar tickets:', error);
+                ticketsList.innerHTML = '<div class="px-6 py-8 text-center text-red-500"><p>Erro ao carregar tickets</p></div>';
+            }
+        }
+
+        // ==========================================
+        // GRÁFICOS
+        // ==========================================
+        function initCharts() {
+            // Gráfico de Tickets por Dia
+            const ctx1 = document.getElementById('ticketsChart').getContext('2d');
+            new Chart(ctx1, {
+                type: 'line',
+                data: {
+                    labels: ['Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb', 'Dom'],
+                    datasets: [{
+                        label: 'Tickets Criados',
+                        data: [12, 19, 15, 25, 22, 18, 20],
+                        borderColor: 'rgb(249, 115, 22)',
+                        backgroundColor: 'rgba(249, 115, 22, 0.1)',
+                        tension: 0.4
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: true,
+                    plugins: {
+                        legend: {
+                            display: false
+                        }
+                    }
+                }
+            });
+            
+            // Gráfico de Categorias
+            const ctx2 = document.getElementById('categoriesChart').getContext('2d');
+            new Chart(ctx2, {
+                type: 'doughnut',
+                data: {
+                    labels: ['🛒 Vendas', '🔧 Suporte', '❓ Dúvidas', '📦 Outros'],
+                    datasets: [{
+                        data: [45, 30, 20, 5],
+                        backgroundColor: [
+                            'rgb(34, 197, 94)',
+                            'rgb(59, 130, 246)',
+                            'rgb(249, 115, 22)',
+                            'rgb(156, 163, 175)'
+                        ]
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: true
+                }
+            });
+        }
+
+        // ==========================================
+        // FUNÇÕES AUXILIARES
+        // ==========================================
+        function getPriorityColor(priority) {
+            const colors = {
+                'urgent': 'bg-red-100 text-red-700',
+                'high': 'bg-orange-100 text-orange-700',
+                'normal': 'bg-blue-100 text-blue-700',
+                'low': 'bg-gray-100 text-gray-700'
+            };
+            return colors[priority] || colors.normal;
+        }
+        
+        function getPriorityLabel(priority) {
+            const labels = {
+                'urgent': '🔴 URGENTE',
+                'high': '🟡 ALTO',
+                'normal': '🔵 NORMAL',
+                'low': '🟢 BAIXO'
+            };
+            return labels[priority] || labels.normal;
+        }
+        
+        function getTimeAgo(timestamp) {
+            const now = new Date();
+            const created = new Date(timestamp);
+            const diff = Math.floor((now - created) / 1000 / 60);
+            
+            if (diff < 1) return 'agora';
+            if (diff < 60) return `${diff}min atrás`;
+            if (diff < 1440) return `${Math.floor(diff/60)}h atrás`;
+            return `${Math.floor(diff/1440)}d atrás`;
+        }
+        
+        function viewTicket(ticketId) {
+            window.location.href = `/ticket/${ticketId}`;
+        }
+        
+        function filterTickets(status) {
+            loadTickets(status);
+        }
+        
+        function refreshStats() {
+            loadStats();
+        }
+        
+        function refreshTickets() {
+            loadTickets(currentFilter);
+        }
+        
+        function showNotification(message) {
+            // Implementar notificação toast
+            console.log('📢', message);
+        }
+        
+        function showSettings() {
+            alert('Configurações em desenvolvimento...');
+        }
+
+        // ==========================================
+        // INICIALIZAÇÃO
+        // ==========================================
+        document.addEventListener('DOMContentLoaded', function() {
+            loadStats();
+            loadTickets('open');
+            initCharts();
+            
+            // Atualizar a cada 30 segundos
+            setInterval(refreshStats, 30000);
+            setInterval(refreshTickets, 30000);
+        });
+    </script>
+</body>
+</html>

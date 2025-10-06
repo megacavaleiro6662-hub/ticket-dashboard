@@ -1,0 +1,424 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Categorias - CAOS Ticket Manager</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-100">
+    <!-- Navbar (mesmo do dashboard) -->
+    <nav class="bg-white shadow-lg">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between h-16">
+                <div class="flex items-center">
+                    <div class="flex-shrink-0 flex items-center">
+                        <span class="text-3xl">🎫</span>
+                        <span class="ml-2 text-xl font-bold text-gray-800">CAOS Ticket Manager</span>
+                    </div>
+                    
+                    <div class="hidden md:ml-10 md:flex md:space-x-4">
+                        <a href="/dashboard" class="text-gray-700 hover:bg-gray-100 px-3 py-2 rounded-md text-sm font-medium">
+                            📊 Dashboard
+                        </a>
+                        <a href="/categories" class="bg-orange-100 text-orange-700 px-3 py-2 rounded-md text-sm font-medium">
+                            🏷️ Categorias
+                        </a>
+                        <a href="/panels" class="text-gray-700 hover:bg-gray-100 px-3 py-2 rounded-md text-sm font-medium">
+                            🎨 Painéis
+                        </a>
+                        <a href="#" class="text-gray-700 hover:bg-gray-100 px-3 py-2 rounded-md text-sm font-medium">
+                            ⚙️ Configurações
+                        </a>
+                    </div>
+                </div>
+                
+                <div class="flex items-center">
+                    <div class="flex items-center space-x-3">
+                        <div class="text-right">
+                            <p class="text-sm font-medium text-gray-700">{{ user.username }}</p>
+                            <p class="text-xs text-gray-500">Staff</p>
+                        </div>
+                        {% if user.avatar %}
+                        <img class="h-10 w-10 rounded-full" src="https://cdn.discordapp.com/avatars/{{ user.id }}/{{ user.avatar }}.png" alt="Avatar">
+                        {% else %}
+                        <div class="h-10 w-10 rounded-full bg-gradient-to-br from-orange-400 to-pink-500 flex items-center justify-center text-white font-bold">
+                            {{ user.username[0] }}
+                        </div>
+                        {% endif %}
+                        <a href="/logout" class="ml-3 text-gray-600 hover:text-red-600 text-sm font-medium">
+                            Sair
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        
+        <!-- Header -->
+        <div class="mb-8 flex justify-between items-center">
+            <div>
+                <h1 class="text-3xl font-bold text-gray-900">🏷️ Gerenciamento de Categorias</h1>
+                <p class="text-gray-600 mt-2">Configure as categorias de tickets disponíveis no sistema</p>
+            </div>
+            <button onclick="showCreateModal()" class="px-6 py-3 bg-orange-500 hover:bg-orange-600 text-white rounded-lg font-semibold shadow-lg">
+                ➕ Nova Categoria
+            </button>
+        </div>
+
+        <!-- Categories List -->
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6" id="categoriesList">
+            <!-- Loading -->
+            <div class="col-span-full flex justify-center py-12">
+                <div class="text-center">
+                    <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-orange-500 mx-auto mb-4"></div>
+                    <p class="text-gray-600">Carregando categorias...</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal de Criar/Editar Categoria -->
+    <div id="categoryModal" class="hidden fixed inset-0 bg-black bg-opacity-50 overflow-y-auto h-full w-full z-50">
+        <div class="relative top-10 mx-auto p-5 border w-full max-w-4xl shadow-lg rounded-lg bg-white mb-10">
+            
+            <!-- Header -->
+            <div class="flex justify-between items-center border-b pb-4 mb-6">
+                <h3 class="text-2xl font-bold text-gray-900" id="modalTitle">➕ Criar Nova Categoria</h3>
+                <button onclick="closeModal()" class="text-gray-400 hover:text-gray-600 text-2xl">×</button>
+            </div>
+
+            <form id="categoryForm" class="space-y-6">
+                
+                <!-- Informações Básicas -->
+                <div class="bg-gray-50 p-6 rounded-lg">
+                    <h4 class="text-lg font-semibold text-gray-900 mb-4">📌 Informações Básicas</h4>
+                    
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <!-- Nome -->
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Nome da Categoria *</label>
+                            <input type="text" id="categoryName" required
+                                class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent"
+                                placeholder="Ex: Carrinho de Compras">
+                        </div>
+                        
+                        <!-- Emoji -->
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Emoji *</label>
+                            <select id="categoryEmoji" required class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500">
+                                <option value="🛒">🛒 Carrinho</option>
+                                <option value="💰">💰 Pagamento</option>
+                                <option value="🔧">🔧 Suporte</option>
+                                <option value="❓">❓ Dúvidas</option>
+                                <option value="📦">📦 Produtos</option>
+                                <option value="🎁">🎁 Prêmios</option>
+                                <option value="⚠️">⚠️ Problemas</option>
+                                <option value="📞">📞 Contato</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <!-- Descrição -->
+                    <div class="mt-4">
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Descrição (aparece no botão)</label>
+                        <input type="text" id="categoryDescription"
+                            class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500"
+                            placeholder="Ex: Finalizar compra e pagamento">
+                    </div>
+
+                    <!-- Cor -->
+                    <div class="mt-4">
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Cor</label>
+                        <select id="categoryColor" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500">
+                            <option value="#FF8C00">🟠 Laranja</option>
+                            <option value="#22C55E">🟢 Verde</option>
+                            <option value="#3B82F6">🔵 Azul</option>
+                            <option value="#EF4444">🔴 Vermelho</option>
+                            <option value="#8B5CF6">🟣 Roxo</option>
+                            <option value="#6B7280">⚫ Cinza</option>
+                        </select>
+                    </div>
+                </div>
+
+                <!-- Canal de Destino -->
+                <div class="bg-gray-50 p-6 rounded-lg">
+                    <h4 class="text-lg font-semibold text-gray-900 mb-4">📂 Canal de Destino</h4>
+                    
+                    <!-- Categoria do Discord -->
+                    <div class="mb-4">
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Categoria do Discord (ID) *</label>
+                        <input type="text" id="channelCategoryId" required
+                            class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500"
+                            placeholder="Ex: 1234567890123456789">
+                        <p class="text-xs text-gray-500 mt-1">ID da categoria onde os tickets serão criados</p>
+                    </div>
+
+                    <!-- Template do nome do canal -->
+                    <div class="mb-4">
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Template do Nome do Canal *</label>
+                        <input type="text" id="channelTemplate" required
+                            class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500"
+                            placeholder="Ex: 🛒-carrinho-{username}"
+                            value="🎫-ticket-{username}">
+                        <p class="text-xs text-gray-500 mt-1">
+                            Variáveis disponíveis: <code class="bg-gray-200 px-1 rounded">{username}</code>, 
+                            <code class="bg-gray-200 px-1 rounded">{id}</code>, 
+                            <code class="bg-gray-200 px-1 rounded">{number}</code>
+                        </p>
+                    </div>
+                </div>
+
+                <!-- Permissões -->
+                <div class="bg-gray-50 p-6 rounded-lg">
+                    <h4 class="text-lg font-semibold text-gray-900 mb-4">👥 Permissões</h4>
+                    
+                    <!-- Cargos permitidos -->
+                    <div class="mb-4">
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Cargos com Acesso (IDs separados por vírgula)</label>
+                        <input type="text" id="allowedRoles"
+                            class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500"
+                            placeholder="Ex: 1234567890, 0987654321">
+                        <p class="text-xs text-gray-500 mt-1">IDs dos cargos que podem ver os tickets desta categoria</p>
+                    </div>
+
+                    <!-- Cargo para mencionar -->
+                    <div class="mb-4">
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Mencionar Cargo (ID)</label>
+                        <input type="text" id="mentionRole"
+                            class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500"
+                            placeholder="Ex: 1234567890">
+                        <p class="text-xs text-gray-500 mt-1">Cargo que será mencionado quando um ticket for criado</p>
+                    </div>
+                </div>
+
+                <!-- Mensagem Inicial -->
+                <div class="bg-gray-50 p-6 rounded-lg">
+                    <h4 class="text-lg font-semibold text-gray-900 mb-4">📨 Mensagem Inicial do Ticket</h4>
+                    
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Mensagem Automática</label>
+                        <textarea id="initialMessage" rows="4"
+                            class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500"
+                            placeholder="Olá {user}! Seja bem-vindo ao seu ticket. Como posso ajudar?">Olá {user}! Seja bem-vindo ao seu ticket.
+
+Um membro da staff responderá em breve. Enquanto isso, descreva seu problema com detalhes.</textarea>
+                        <p class="text-xs text-gray-500 mt-1">
+                            Variável disponível: <code class="bg-gray-200 px-1 rounded">{user}</code> (menciona o usuário)
+                        </p>
+                    </div>
+                </div>
+
+                <!-- Botões de Ação -->
+                <div class="flex justify-end space-x-3 pt-4 border-t">
+                    <button type="button" onclick="closeModal()" 
+                        class="px-6 py-2 bg-gray-200 hover:bg-gray-300 text-gray-700 rounded-lg font-medium">
+                        Cancelar
+                    </button>
+                    <button type="submit" 
+                        class="px-6 py-2 bg-orange-500 hover:bg-orange-600 text-white rounded-lg font-medium">
+                        💾 Salvar Categoria
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        let categories = [];
+        let editingId = null;
+
+        // ==========================================
+        // CARREGAR CATEGORIAS
+        // ==========================================
+        async function loadCategories() {
+            try {
+                const response = await fetch('/api/categories');
+                categories = await response.json();
+                renderCategories();
+            } catch (error) {
+                console.error('Erro ao carregar categorias:', error);
+                document.getElementById('categoriesList').innerHTML = `
+                    <div class="col-span-full text-center py-12 text-red-500">
+                        <p>Erro ao carregar categorias</p>
+                    </div>
+                `;
+            }
+        }
+
+        // ==========================================
+        // RENDERIZAR CATEGORIAS
+        // ==========================================
+        function renderCategories() {
+            const container = document.getElementById('categoriesList');
+            
+            if (categories.length === 0) {
+                container.innerHTML = `
+                    <div class="col-span-full text-center py-12">
+                        <span class="text-6xl">📋</span>
+                        <p class="text-gray-600 mt-4">Nenhuma categoria criada ainda.</p>
+                        <p class="text-gray-500 text-sm mt-2">Clique em "Nova Categoria" para começar.</p>
+                    </div>
+                `;
+                return;
+            }
+
+            container.innerHTML = categories.map(cat => `
+                <div class="bg-white rounded-lg shadow-md hover:shadow-xl transition p-6">
+                    <!-- Header -->
+                    <div class="flex items-center justify-between mb-4">
+                        <div class="flex items-center space-x-3">
+                            <span class="text-4xl">${cat.emoji || '📋'}</span>
+                            <div>
+                                <h3 class="text-lg font-bold text-gray-900">${cat.name}</h3>
+                                <p class="text-sm text-gray-500">${cat.description || 'Sem descrição'}</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Info -->
+                    <div class="space-y-2 mb-4 text-sm">
+                        <div class="flex items-center text-gray-600">
+                            <span class="font-medium w-24">Cor:</span>
+                            <div class="flex items-center space-x-2">
+                                <div class="w-6 h-6 rounded" style="background-color: ${cat.color || '#FF8C00'}"></div>
+                                <span>${cat.color || '#FF8C00'}</span>
+                            </div>
+                        </div>
+                        <div class="flex items-center text-gray-600">
+                            <span class="font-medium w-24">Template:</span>
+                            <span class="text-xs font-mono bg-gray-100 px-2 py-1 rounded">${cat.channel_name_template || 'N/A'}</span>
+                        </div>
+                    </div>
+
+                    <!-- Actions -->
+                    <div class="flex space-x-2 pt-4 border-t">
+                        <button onclick="editCategory(${cat.id})" 
+                            class="flex-1 px-4 py-2 bg-blue-100 hover:bg-blue-200 text-blue-700 rounded-lg text-sm font-medium">
+                            ✏️ Editar
+                        </button>
+                        <button onclick="deleteCategory(${cat.id})" 
+                            class="flex-1 px-4 py-2 bg-red-100 hover:bg-red-200 text-red-700 rounded-lg text-sm font-medium">
+                            🗑️ Deletar
+                        </button>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        // ==========================================
+        // MODAL
+        // ==========================================
+        function showCreateModal() {
+            editingId = null;
+            document.getElementById('modalTitle').textContent = '➕ Criar Nova Categoria';
+            document.getElementById('categoryForm').reset();
+            document.getElementById('categoryModal').classList.remove('hidden');
+        }
+
+        function closeModal() {
+            document.getElementById('categoryModal').classList.add('hidden');
+            editingId = null;
+        }
+
+        // ==========================================
+        // EDITAR CATEGORIA
+        // ==========================================
+        function editCategory(id) {
+            const category = categories.find(c => c.id === id);
+            if (!category) return;
+
+            editingId = id;
+            document.getElementById('modalTitle').textContent = '✏️ Editar Categoria';
+            
+            document.getElementById('categoryName').value = category.name || '';
+            document.getElementById('categoryEmoji').value = category.emoji || '🛒';
+            document.getElementById('categoryDescription').value = category.description || '';
+            document.getElementById('categoryColor').value = category.color || '#FF8C00';
+            document.getElementById('channelCategoryId').value = category.channel_category_id || '';
+            document.getElementById('channelTemplate').value = category.channel_name_template || '';
+            document.getElementById('allowedRoles').value = category.allowed_roles ? JSON.parse(category.allowed_roles).join(', ') : '';
+            document.getElementById('mentionRole').value = category.mention_role_id || '';
+            document.getElementById('initialMessage').value = category.initial_message || '';
+            
+            document.getElementById('categoryModal').classList.remove('hidden');
+        }
+
+        // ==========================================
+        // DELETAR CATEGORIA
+        // ==========================================
+        async function deleteCategory(id) {
+            if (!confirm('Tem certeza que deseja deletar esta categoria?')) return;
+
+            try {
+                const response = await fetch(`/api/categories/${id}`, {
+                    method: 'DELETE'
+                });
+
+                if (response.ok) {
+                    alert('✅ Categoria deletada com sucesso!');
+                    loadCategories();
+                } else {
+                    alert('❌ Erro ao deletar categoria');
+                }
+            } catch (error) {
+                console.error('Erro:', error);
+                alert('❌ Erro ao deletar categoria');
+            }
+        }
+
+        // ==========================================
+        // SALVAR CATEGORIA
+        // ==========================================
+        document.getElementById('categoryForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+
+            const data = {
+                name: document.getElementById('categoryName').value,
+                emoji: document.getElementById('categoryEmoji').value,
+                description: document.getElementById('categoryDescription').value,
+                color: document.getElementById('categoryColor').value,
+                channel_category_id: document.getElementById('channelCategoryId').value,
+                channel_name_template: document.getElementById('channelTemplate').value,
+                allowed_roles: document.getElementById('allowedRoles').value.split(',').map(r => r.trim()).filter(r => r),
+                mention_role_id: document.getElementById('mentionRole').value,
+                initial_message: document.getElementById('initialMessage').value
+            };
+
+            try {
+                const url = editingId ? `/api/categories/${editingId}` : '/api/categories';
+                const method = editingId ? 'PUT' : 'POST';
+
+                const response = await fetch(url, {
+                    method: method,
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(data)
+                });
+
+                if (response.ok) {
+                    alert('✅ Categoria salva com sucesso!');
+                    closeModal();
+                    loadCategories();
+                } else {
+                    alert('❌ Erro ao salvar categoria');
+                }
+            } catch (error) {
+                console.error('Erro:', error);
+                alert('❌ Erro ao salvar categoria');
+            }
+        });
+
+        // ==========================================
+        // INICIALIZAÇÃO
+        // ==========================================
+        document.addEventListener('DOMContentLoaded', function() {
+            loadCategories();
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,436 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Painéis - CAOS Ticket Manager</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-100">
+    <!-- Navbar -->
+    <nav class="bg-white shadow-lg">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between h-16">
+                <div class="flex items-center">
+                    <div class="flex-shrink-0 flex items-center">
+                        <span class="text-3xl">🎫</span>
+                        <span class="ml-2 text-xl font-bold text-gray-800">CAOS Ticket Manager</span>
+                    </div>
+                    
+                    <div class="hidden md:ml-10 md:flex md:space-x-4">
+                        <a href="/dashboard" class="text-gray-700 hover:bg-gray-100 px-3 py-2 rounded-md text-sm font-medium">
+                            📊 Dashboard
+                        </a>
+                        <a href="/categories" class="text-gray-700 hover:bg-gray-100 px-3 py-2 rounded-md text-sm font-medium">
+                            🏷️ Categorias
+                        </a>
+                        <a href="/panels" class="bg-orange-100 text-orange-700 px-3 py-2 rounded-md text-sm font-medium">
+                            🎨 Painéis
+                        </a>
+                        <a href="#" class="text-gray-700 hover:bg-gray-100 px-3 py-2 rounded-md text-sm font-medium">
+                            ⚙️ Configurações
+                        </a>
+                    </div>
+                </div>
+                
+                <div class="flex items-center">
+                    <div class="flex items-center space-x-3">
+                        <div class="text-right">
+                            <p class="text-sm font-medium text-gray-700">{{ user.username }}</p>
+                            <p class="text-xs text-gray-500">Staff</p>
+                        </div>
+                        {% if user.avatar %}
+                        <img class="h-10 w-10 rounded-full" src="https://cdn.discordapp.com/avatars/{{ user.id }}/{{ user.avatar }}.png" alt="Avatar">
+                        {% else %}
+                        <div class="h-10 w-10 rounded-full bg-gradient-to-br from-orange-400 to-pink-500 flex items-center justify-center text-white font-bold">
+                            {{ user.username[0] }}
+                        </div>
+                        {% endif %}
+                        <a href="/logout" class="ml-3 text-gray-600 hover:text-red-600 text-sm font-medium">
+                            Sair
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        
+        <!-- Header -->
+        <div class="mb-8 flex justify-between items-center">
+            <div>
+                <h1 class="text-3xl font-bold text-gray-900">🎨 Editor de Painéis de Tickets</h1>
+                <p class="text-gray-600 mt-2">Crie e gerencie painéis visuais para abertura de tickets</p>
+            </div>
+            <button onclick="showCreatePanel()" class="px-6 py-3 bg-orange-500 hover:bg-orange-600 text-white rounded-lg font-semibold shadow-lg">
+                ➕ Novo Painel
+            </button>
+        </div>
+
+        <!-- Panels List -->
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6" id="panelsList">
+            <div class="col-span-full flex justify-center py-12">
+                <div class="text-center">
+                    <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-orange-500 mx-auto mb-4"></div>
+                    <p class="text-gray-600">Carregando painéis...</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal de Criar Painel -->
+    <div id="panelModal" class="hidden fixed inset-0 bg-black bg-opacity-50 overflow-y-auto h-full w-full z-50">
+        <div class="relative top-10 mx-auto p-5 border w-full max-w-6xl shadow-lg rounded-lg bg-white mb-10">
+            
+            <!-- Header -->
+            <div class="flex justify-between items-center border-b pb-4 mb-6">
+                <h3 class="text-2xl font-bold text-gray-900">🎨 Criar Novo Painel de Tickets</h3>
+                <button onclick="closeModal()" class="text-gray-400 hover:text-gray-600 text-2xl">×</button>
+            </div>
+
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                
+                <!-- Coluna Esquerda: Preview -->
+                <div>
+                    <h4 class="text-lg font-semibold text-gray-900 mb-4">👁️ Preview Ao Vivo</h4>
+                    
+                    <div class="border-4 border-gray-300 rounded-lg p-6 bg-gray-900">
+                        <!-- Discord Embed Preview -->
+                        <div id="embedPreview" class="rounded-lg p-6 text-white" style="background-color: #2B2D31;">
+                            <div class="flex">
+                                <div class="w-1 rounded mr-4" id="embedColorBar" style="background-color: #FF8C00;"></div>
+                                <div class="flex-1">
+                                    <h3 class="text-xl font-bold mb-2" id="previewTitle">📋 Sistema de Tickets</h3>
+                                    <p class="text-gray-300 mb-4" id="previewDescription">Selecione uma categoria para abrir um ticket:</p>
+                                    
+                                    <!-- Botões de Categoria -->
+                                    <div class="space-y-2" id="previewButtons">
+                                        <!-- Botões serão inseridos aqui -->
+                                    </div>
+                                    
+                                    <div class="text-xs text-gray-400 mt-4" id="previewFooter">CAOS Hub © 2025</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Coluna Direita: Configurações -->
+                <div>
+                    <form id="panelForm">
+                        
+                        <!-- Informações do Painel -->
+                        <div class="bg-gray-50 p-4 rounded-lg mb-4">
+                            <h4 class="text-lg font-semibold text-gray-900 mb-3">📋 Informações do Painel</h4>
+                            
+                            <div class="space-y-3">
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 mb-1">Nome do Painel *</label>
+                                    <input type="text" id="panelName" required
+                                        class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-orange-500"
+                                        placeholder="Ex: Atendimento ao Cliente">
+                                </div>
+
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 mb-1">Canal do Discord (ID) *</label>
+                                    <input type="text" id="panelChannel" required
+                                        class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-orange-500"
+                                        placeholder="Ex: 1234567890">
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Embed -->
+                        <div class="bg-gray-50 p-4 rounded-lg mb-4">
+                            <h4 class="text-lg font-semibold text-gray-900 mb-3">🎨 Configuração do Embed</h4>
+                            
+                            <div class="space-y-3">
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 mb-1">Título</label>
+                                    <input type="text" id="embedTitle" onkeyup="updatePreview()"
+                                        class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-orange-500"
+                                        value="📋 Sistema de Tickets">
+                                </div>
+
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 mb-1">Descrição</label>
+                                    <textarea id="embedDescription" rows="2" onkeyup="updatePreview()"
+                                        class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-orange-500">Selecione uma categoria para abrir um ticket:</textarea>
+                                </div>
+
+                                <div class="grid grid-cols-2 gap-3">
+                                    <div>
+                                        <label class="block text-sm font-medium text-gray-700 mb-1">Cor</label>
+                                        <select id="embedColor" onchange="updatePreview()" class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm">
+                                            <option value="#FF8C00">🟠 Laranja</option>
+                                            <option value="#22C55E">🟢 Verde</option>
+                                            <option value="#3B82F6">🔵 Azul</option>
+                                            <option value="#EF4444">🔴 Vermelho</option>
+                                            <option value="#8B5CF6">🟣 Roxo</option>
+                                        </select>
+                                    </div>
+
+                                    <div>
+                                        <label class="block text-sm font-medium text-gray-700 mb-1">Tipo</label>
+                                        <select id="panelType" class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm">
+                                            <option value="buttons">Botões</option>
+                                            <option value="dropdown">Dropdown</option>
+                                        </select>
+                                    </div>
+                                </div>
+
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 mb-1">Footer</label>
+                                    <input type="text" id="embedFooter" onkeyup="updatePreview()"
+                                        class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-orange-500"
+                                        value="CAOS Hub © 2025">
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Categorias -->
+                        <div class="bg-gray-50 p-4 rounded-lg mb-4">
+                            <h4 class="text-lg font-semibold text-gray-900 mb-3">🏷️ Categorias do Painel</h4>
+                            
+                            <div id="categoriesSelection" class="space-y-2 max-h-48 overflow-y-auto">
+                                <!-- Categorias carregadas aqui -->
+                                <p class="text-sm text-gray-500">Carregando categorias...</p>
+                            </div>
+                        </div>
+
+                        <!-- Botões -->
+                        <div class="flex justify-end space-x-3 pt-4 border-t">
+                            <button type="button" onclick="closeModal()" 
+                                class="px-4 py-2 bg-gray-200 hover:bg-gray-300 text-gray-700 rounded-lg text-sm font-medium">
+                                Cancelar
+                            </button>
+                            <button type="button" onclick="sendToDiscord()" 
+                                class="px-4 py-2 bg-green-500 hover:bg-green-600 text-white rounded-lg text-sm font-medium">
+                                📤 Enviar para Discord
+                            </button>
+                            <button type="submit" 
+                                class="px-4 py-2 bg-orange-500 hover:bg-orange-600 text-white rounded-lg text-sm font-medium">
+                                💾 Salvar
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let panels = [];
+        let categories = [];
+        let selectedCategories = [];
+
+        // ==========================================
+        // CARREGAR DADOS
+        // ==========================================
+        async function loadPanels() {
+            try {
+                const response = await fetch('/api/panels');
+                panels = await response.json();
+                renderPanels();
+            } catch (error) {
+                console.error('Erro ao carregar painéis:', error);
+            }
+        }
+
+        async function loadCategories() {
+            try {
+                const response = await fetch('/api/categories');
+                categories = await response.json();
+                renderCategoriesSelection();
+            } catch (error) {
+                console.error('Erro ao carregar categorias:', error);
+            }
+        }
+
+        // ==========================================
+        // RENDERIZAR
+        // ==========================================
+        function renderPanels() {
+            const container = document.getElementById('panelsList');
+            
+            if (panels.length === 0) {
+                container.innerHTML = `
+                    <div class="col-span-full text-center py-12">
+                        <span class="text-6xl">🎨</span>
+                        <p class="text-gray-600 mt-4">Nenhum painel criado ainda.</p>
+                        <p class="text-gray-500 text-sm mt-2">Clique em "Novo Painel" para começar.</p>
+                    </div>
+                `;
+                return;
+            }
+
+            container.innerHTML = panels.map(panel => `
+                <div class="bg-white rounded-lg shadow-md p-6">
+                    <div class="flex justify-between items-start mb-4">
+                        <div>
+                            <h3 class="text-lg font-bold text-gray-900">${panel.name}</h3>
+                            <p class="text-sm text-gray-500">Canal: ${panel.channel_id || 'Não configurado'}</p>
+                        </div>
+                        <div class="w-6 h-6 rounded" style="background-color: ${panel.color || '#FF8C00'}"></div>
+                    </div>
+
+                    <div class="bg-gray-50 p-4 rounded-lg mb-4">
+                        <p class="text-sm text-gray-700"><strong>Título:</strong> ${panel.title || 'N/A'}</p>
+                        <p class="text-sm text-gray-700 mt-2"><strong>Descrição:</strong> ${panel.description || 'N/A'}</p>
+                    </div>
+
+                    <div class="flex space-x-2">
+                        <button onclick="alert('Em desenvolvimento')" 
+                            class="flex-1 px-4 py-2 bg-blue-100 hover:bg-blue-200 text-blue-700 rounded-lg text-sm font-medium">
+                            ✏️ Editar
+                        </button>
+                        <button onclick="alert('Em desenvolvimento')" 
+                            class="flex-1 px-4 py-2 bg-red-100 hover:bg-red-200 text-red-700 rounded-lg text-sm font-medium">
+                            🗑️ Deletar
+                        </button>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function renderCategoriesSelection() {
+            const container = document.getElementById('categoriesSelection');
+            
+            if (categories.length === 0) {
+                container.innerHTML = '<p class="text-sm text-gray-500">Nenhuma categoria disponível. Crie uma categoria primeiro.</p>';
+                return;
+            }
+
+            container.innerHTML = categories.map(cat => `
+                <label class="flex items-center space-x-3 p-2 hover:bg-gray-100 rounded cursor-pointer">
+                    <input type="checkbox" value="${cat.id}" onchange="toggleCategory(${cat.id})"
+                        class="w-4 h-4 text-orange-500 border-gray-300 rounded focus:ring-orange-500">
+                    <span class="text-2xl">${cat.emoji}</span>
+                    <span class="flex-1 text-sm font-medium text-gray-700">${cat.name}</span>
+                </label>
+            `).join('');
+        }
+
+        // ==========================================
+        // PREVIEW
+        // ==========================================
+        function updatePreview() {
+            const title = document.getElementById('embedTitle').value;
+            const description = document.getElementById('embedDescription').value;
+            const color = document.getElementById('embedColor').value;
+            const footer = document.getElementById('embedFooter').value;
+
+            document.getElementById('previewTitle').textContent = title;
+            document.getElementById('previewDescription').textContent = description;
+            document.getElementById('embedColorBar').style.backgroundColor = color;
+            document.getElementById('previewFooter').textContent = footer;
+
+            updateCategoryButtons();
+        }
+
+        function toggleCategory(catId) {
+            const index = selectedCategories.indexOf(catId);
+            if (index > -1) {
+                selectedCategories.splice(index, 1);
+            } else {
+                selectedCategories.push(catId);
+            }
+            updateCategoryButtons();
+        }
+
+        function updateCategoryButtons() {
+            const container = document.getElementById('previewButtons');
+            const selectedCats = categories.filter(c => selectedCategories.includes(c.id));
+
+            if (selectedCats.length === 0) {
+                container.innerHTML = '<p class="text-sm text-gray-400 italic">Nenhuma categoria selecionada</p>';
+                return;
+            }
+
+            container.innerHTML = selectedCats.map(cat => `
+                <div class="bg-blue-600 hover:bg-blue-700 px-4 py-2 rounded text-white font-medium text-sm cursor-pointer">
+                    ${cat.emoji} ${cat.name}
+                </div>
+            `).join('');
+        }
+
+        // ==========================================
+        // MODAL
+        // ==========================================
+        async function showCreatePanel() {
+            selectedCategories = [];
+            document.getElementById('panelForm').reset();
+            document.getElementById('panelModal').classList.remove('hidden');
+            
+            await loadCategories();
+            updatePreview();
+        }
+
+        function closeModal() {
+            document.getElementById('panelModal').classList.add('hidden');
+        }
+
+        // ==========================================
+        // SALVAR
+        // ==========================================
+        document.getElementById('panelForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+
+            const data = {
+                name: document.getElementById('panelName').value,
+                title: document.getElementById('embedTitle').value,
+                description: document.getElementById('embedDescription').value,
+                color: document.getElementById('embedColor').value,
+                footer: document.getElementById('embedFooter').value,
+                channel_id: document.getElementById('panelChannel').value,
+                panel_type: document.getElementById('panelType').value,
+                categories: selectedCategories
+            };
+
+            try {
+                const response = await fetch('/api/panels', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(data)
+                });
+
+                if (response.ok) {
+                    alert('✅ Painel salvo com sucesso!');
+                    closeModal();
+                    loadPanels();
+                } else {
+                    alert('❌ Erro ao salvar painel');
+                }
+            } catch (error) {
+                console.error('Erro:', error);
+                alert('❌ Erro ao salvar painel');
+            }
+        });
+
+        // ==========================================
+        // ENVIAR PARA DISCORD
+        // ==========================================
+        async function sendToDiscord() {
+            if (selectedCategories.length === 0) {
+                alert('⚠️ Selecione pelo menos uma categoria!');
+                return;
+            }
+
+            if (!confirm('Enviar este painel para o Discord agora?')) return;
+
+            alert('📤 Funcionalidade em desenvolvimento. Configure o webhook do bot primeiro.');
+        }
+
+        // ==========================================
+        // INIT
+        // ==========================================
+        document.addEventListener('DOMContentLoaded', function() {
+            loadPanels();
+        });
+    </script>
+</body>
+</html>
