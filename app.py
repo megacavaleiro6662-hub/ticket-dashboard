@@ -33,12 +33,13 @@ TOKEN_URL = f'{DISCORD_API_URL}/oauth2/token'
 
 # IDs dos cargos permitidos (apenas staff pode acessar)
 ALLOWED_ROLES = [
-    1365630916939710545,  # Admin
-    1365630919552749598,  # Staff
-    # Adicione mais IDs de cargos aqui
+    1365633918593794079,  # 👑 Administrador
+    1365634226254254150,  # 🛠️ Staff
+    1365633102973763595,  # 🛡️ Moderador
+    1365631940434333748,  # 🔰 Sub-Moderador
 ]
 
-GUILD_ID = os.getenv('GUILD_ID', '1365630916927553586')
+GUILD_ID = os.getenv('GUILD_ID', '1365510151884378214')
 
 # =====================================================
 # BANCO DE DADOS
