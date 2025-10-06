@@ -5,7 +5,6 @@
 
 from flask import Flask, render_template, request, jsonify, session, redirect, url_for
 from flask_cors import CORS
-from flask_socketio import SocketIO, emit
 import os
 import json
 import requests
@@ -17,7 +16,6 @@ import secrets
 app = Flask(__name__)
 app.config['SECRET_KEY'] = os.getenv('SECRET_KEY', secrets.token_hex(32))
 CORS(app)
-socketio = SocketIO(app, cors_allowed_origins="*")
 
 # =====================================================
 # CONFIGURAÇÕES DISCORD OAUTH2
@@ -506,25 +504,6 @@ def send_panel_to_discord():
     })
 
 # =====================================================
-# WEBSOCKET PARA TEMPO REAL
-# =====================================================
-@socketio.on('connect')
-def handle_connect():
-    """Cliente conectado"""
-    print('Cliente conectou ao WebSocket')
-    emit('connected', {'message': 'Conectado ao servidor'})
-
-@socketio.on('new_ticket')
-def handle_new_ticket(data):
-    """Novo ticket criado - notificar todos"""
-    emit('ticket_created', data, broadcast=True)
-
-@socketio.on('ticket_updated')
-def handle_ticket_update(data):
-    """Ticket atualizado - notificar todos"""
-    emit('ticket_update', data, broadcast=True)
-
-# =====================================================
 # INICIALIZAÇÃO
 # =====================================================
 # Inicializar banco de dados sempre
@@ -543,7 +522,7 @@ if __name__ == '__main__':
     print(f"   - DISCORD_TOKEN")
     print(f"   - GUILD_ID")
     
-    socketio.run(app, host='0.0.0.0', port=port, debug=debug)
+    app.run(host='0.0.0.0', port=port, debug=debug)
 else:
     # Modo produção (Gunicorn)
     print("✅ Dashboard iniciado em modo produção")

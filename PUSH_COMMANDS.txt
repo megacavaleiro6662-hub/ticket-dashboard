@@ -1,0 +1,15 @@
+# ========================================
+# COMANDOS PARA FAZER PUSH (EXECUTE APÓS CRIAR O REPOSITÓRIO)
+# ========================================
+
+cd d:\script's\ticket-dashboard
+
+git remote add origin https://github.com/megacavaleiro6662-hub/ticket-dashboard.git
+
+git branch -M main
+
+git push -u origin main
+
+# ========================================
+# PRONTO! Dashboard no GitHub!
+# ========================================
