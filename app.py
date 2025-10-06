@@ -204,30 +204,51 @@ def callback():
         headers={'Authorization': f"Bearer {access_token}"}
     )
     
-    # Verificar se é o dono do servidor
-    guild_info = requests.get(
-        f'{DISCORD_API_URL}/guilds/{GUILD_ID}',
-        headers={'Authorization': f"Bot {DISCORD_BOT_TOKEN}"}
-    )
-    
-    is_owner = False
-    if guild_info.status_code == 200:
-        guild_data = guild_info.json()
-        is_owner = str(guild_data.get('owner_id')) == str(user_data['id'])
-    
     # Obter cargos do usuário
     user_roles = []
+    is_owner = False
+    
     if guild_response.status_code == 200:
         member_data = guild_response.json()
         user_roles = [int(role) for role in member_data.get('roles', [])]
+        
+        # Debug - print user info
+        print(f"🔍 DEBUG - User ID: {user_data['id']}")
+        print(f"🔍 DEBUG - Username: {user_data['username']}")
+        print(f"🔍 DEBUG - User Roles: {user_roles}")
+        print(f"🔍 DEBUG - Allowed Roles: {ALLOWED_ROLES}")
+    
+    # Verificar se é o dono do servidor através do endpoint de guild
+    try:
+        guild_info = requests.get(
+            f'{DISCORD_API_URL}/guilds/{GUILD_ID}',
+            headers={'Authorization': f"Bot {DISCORD_BOT_TOKEN}"}
+        )
+        
+        if guild_info.status_code == 200:
+            guild_data = guild_info.json()
+            owner_id = str(guild_data.get('owner_id'))
+            user_id = str(user_data['id'])
+            is_owner = (owner_id == user_id)
+            
+            print(f"🔍 DEBUG - Server Owner ID: {owner_id}")
+            print(f"🔍 DEBUG - Is Owner: {is_owner}")
+        else:
+            print(f"❌ DEBUG - Failed to get guild info: {guild_info.status_code}")
+    except Exception as e:
+        print(f"❌ DEBUG - Error checking owner: {e}")
     
     # Verificar se tem permissão (Owner OU Staff)
-    has_permission = is_owner or any(role in ALLOWED_ROLES for role in user_roles)
+    has_staff_role = any(role in ALLOWED_ROLES for role in user_roles)
+    has_permission = is_owner or has_staff_role
+    
+    print(f"🔍 DEBUG - Has Staff Role: {has_staff_role}")
+    print(f"🔍 DEBUG - Has Permission: {has_permission}")
     
     if not has_permission:
         return render_template('error.html', 
             message="Acesso Negado", 
-            details="Você não tem permissão para acessar o dashboard. Apenas Staff e superiores podem acessar."
+            details=f"Você não tem permissão para acessar o dashboard. Apenas Staff e superiores podem acessar.<br><br>Debug Info:<br>User ID: {user_data['id']}<br>Roles: {user_roles}<br>Is Owner: {is_owner}"
         )
     
     # Salvar na sessão
