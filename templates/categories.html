@@ -150,11 +150,12 @@
                     
                     <!-- Categoria do Discord -->
                     <div class="mb-4">
-                        <label class="block text-sm font-medium text-gray-700 mb-2">Categoria do Discord (ID) *</label>
-                        <input type="text" id="channelCategoryId" required
-                            class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500"
-                            placeholder="Ex: 1234567890123456789">
-                        <p class="text-xs text-gray-500 mt-1">ID da categoria onde os tickets serão criados</p>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Categoria do Discord *</label>
+                        <select id="channelCategoryId" required
+                            class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500">
+                            <option value="">🔄 Carregando categorias...</option>
+                        </select>
+                        <p class="text-xs text-gray-500 mt-1">Selecione a categoria onde os tickets serão criados</p>
                     </div>
 
                     <!-- Template do nome do canal -->
@@ -176,21 +177,22 @@
                 <div class="bg-gray-50 p-6 rounded-lg">
                     <h4 class="text-lg font-semibold text-gray-900 mb-4">👥 Permissões</h4>
                     
-                    <!-- Cargos permitidos -->
+                    <!-- Cargos permitidos (MULTISELECT) -->
                     <div class="mb-4">
-                        <label class="block text-sm font-medium text-gray-700 mb-2">Cargos com Acesso (IDs separados por vírgula)</label>
-                        <input type="text" id="allowedRoles"
-                            class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500"
-                            placeholder="Ex: 1234567890, 0987654321">
-                        <p class="text-xs text-gray-500 mt-1">IDs dos cargos que podem ver os tickets desta categoria</p>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Cargos com Acesso (Staff)</label>
+                        <div id="rolesCheckboxList" class="max-h-48 overflow-y-auto border border-gray-300 rounded-lg p-3 bg-white">
+                            <p class="text-gray-500 text-sm">🔄 Carregando cargos...</p>
+                        </div>
+                        <p class="text-xs text-gray-500 mt-1">Selecione os cargos que podem ver tickets desta categoria</p>
                     </div>
 
                     <!-- Cargo para mencionar -->
                     <div class="mb-4">
-                        <label class="block text-sm font-medium text-gray-700 mb-2">Mencionar Cargo (ID)</label>
-                        <input type="text" id="mentionRole"
-                            class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500"
-                            placeholder="Ex: 1234567890">
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Mencionar Cargo</label>
+                        <select id="mentionRole"
+                            class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500">
+                            <option value="">🔄 Carregando cargos...</option>
+                        </select>
                         <p class="text-xs text-gray-500 mt-1">Cargo que será mencionado quando um ticket for criado</p>
                     </div>
                 </div>
@@ -310,6 +312,65 @@ Um membro da staff responderá em breve. Enquanto isso, descreva seu problema co
         }
 
         // ==========================================
+        // CARREGAR DADOS DO DISCORD (DROPDOWNS)
+        // ==========================================
+        async function loadDiscordCategories() {
+            try {
+                const response = await fetch('/api/discord/categories');
+                const categories = await response.json();
+                
+                const select = document.getElementById('channelCategoryId');
+                select.innerHTML = '<option value="">Selecione uma categoria...</option>';
+                
+                categories.forEach(cat => {
+                    const option = document.createElement('option');
+                    option.value = cat.id;
+                    option.textContent = `📁 ${cat.name}`;
+                    select.appendChild(option);
+                });
+            } catch (error) {
+                console.error('Erro ao carregar categorias do Discord:', error);
+            }
+        }
+
+        async function loadDiscordRoles() {
+            try {
+                const response = await fetch('/api/discord/roles');
+                const roles = await response.json();
+                
+                // Dropdown de mencionar cargo
+                const mentionSelect = document.getElementById('mentionRole');
+                mentionSelect.innerHTML = '<option value="">Nenhum</option>';
+                
+                // Checkboxes de cargos permitidos
+                const checkboxContainer = document.getElementById('rolesCheckboxList');
+                checkboxContainer.innerHTML = '';
+                
+                roles.forEach(role => {
+                    // Skip @everyone
+                    if (role.name === '@everyone') return;
+                    
+                    // Adicionar no dropdown
+                    const option = document.createElement('option');
+                    option.value = role.id;
+                    option.textContent = `${role.name}`;
+                    mentionSelect.appendChild(option);
+                    
+                    // Adicionar checkbox
+                    const div = document.createElement('div');
+                    div.className = 'flex items-center space-x-2 py-1';
+                    div.innerHTML = `
+                        <input type="checkbox" value="${role.id}" class="role-checkbox rounded">
+                        <label class="text-sm">${role.name}</label>
+                    `;
+                    checkboxContainer.appendChild(div);
+                });
+            } catch (error) {
+                console.error('Erro ao carregar cargos do Discord:', error);
+            }
+        }
+
+        // ==========================================
         // MODAL
         // ==========================================
         function showCreateModal() {
@@ -317,6 +378,10 @@ Um membro da staff responderá em breve. Enquanto isso, descreva seu problema co
             document.getElementById('modalTitle').textContent = '➕ Criar Nova Categoria';
             document.getElementById('categoryForm').reset();
             document.getElementById('categoryModal').classList.remove('hidden');
+            
+            // Carregar dados do Discord
+            loadDiscordCategories();
+            loadDiscordRoles();
         }
 
         function closeModal() {
