@@ -67,6 +67,21 @@
         <!-- Notification Area -->
         <div id="notificationArea"></div>
 
+        <!-- Test Connection Button -->
+        <div class="bg-gradient-to-r from-purple-500 to-pink-500 rounded-lg shadow-lg p-6 mb-6">
+            <div class="flex justify-between items-center">
+                <div>
+                    <h3 class="text-xl font-bold text-white flex items-center">
+                        🧪 <span class="ml-2">Testar Conexão com Bot</span>
+                    </h3>
+                    <p class="text-white text-sm mt-1 opacity-90">Enviar mensagem de teste no canal de boas-vindas</p>
+                </div>
+                <button onclick="testBotConnection()" class="bg-white hover:bg-gray-100 text-purple-600 font-bold py-3 px-6 rounded-lg shadow-lg transform transition hover:scale-105">
+                    🚀 Testar Agora
+                </button>
+            </div>
+        </div>
+
         <!-- Systems Grid -->
         <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
             
@@ -247,6 +262,35 @@
             setTimeout(() => {
                 notification.remove();
             }, 3000);
+        }
+
+        // Função para testar conexão com o bot
+        async function testBotConnection() {
+            try {
+                showNotification('🔄 Enviando mensagem de teste...', 'info');
+                
+                const response = await fetch('/api/test_bot', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        channel_id: '1365848708532535369',  // Canal de boas-vindas
+                        message: '🧪 TESTE DE CONEXÃO! Se você está vendo esta mensagem, o Dashboard está conectado ao Bot! ✅'
+                    })
+                });
+
+                const data = await response.json();
+
+                if (data.success) {
+                    showNotification('✅ Mensagem de teste enviada! Verifique o canal #bem-vindos no Discord', 'success');
+                } else {
+                    showNotification(`❌ Erro: ${data.message}`, 'error');
+                }
+            } catch (error) {
+                showNotification('❌ Erro ao conectar com o bot! Verifique se o bot está online.', 'error');
+                console.error('Erro:', error);
+            }
         }
 
         // Event listeners para os toggles

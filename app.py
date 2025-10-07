@@ -717,6 +717,32 @@ def get_config_status():
     config = load_welcome_config()
     return jsonify(config)
 
+@app.route('/api/test_bot', methods=['POST'])
+@staff_required
+def test_bot_connection():
+    """Testa conexão com o bot enviando mensagem em um canal"""
+    try:
+        data = request.get_json()
+        channel_id = data.get('channel_id')
+        message = data.get('message', '🧪 Teste de conexão Dashboard → Bot')
+        
+        # URL do bot no Render
+        bot_url = os.getenv('BOT_URL', 'https://caosbot-discord.onrender.com')
+        
+        response = requests.post(
+            f'{bot_url}/test_connection',
+            json={'channel_id': channel_id, 'message': message},
+            timeout=15
+        )
+        
+        if response.status_code == 200:
+            return jsonify({'success': True, 'message': 'Bot respondeu! Verifique o canal no Discord.'})
+        else:
+            return jsonify({'success': False, 'message': f'Bot retornou erro: {response.text}'}), 500
+            
+    except Exception as e:
+        return jsonify({'success': False, 'message': str(e)}), 500
+
 # =====================================================
 # INICIALIZAÇÃO
 # =====================================================
