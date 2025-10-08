@@ -339,7 +339,17 @@ def get_discord_categories():
 @app.route('/api/discord/roles')
 @staff_required
 def get_discord_roles():
-    """Busca todos os cargos do servidor"""
+    """Busca APENAS os cargos de STAFF (moderação)"""
+    # IDs dos cargos de staff (só esses podem ver tickets)
+    STAFF_ROLE_IDS = [
+        '1365636960651051069',  # 🔥 Founder [FND]
+        '1365636456386789437',  # 🌟 Sub Dono [SDN]
+        '1365633918593794079',  # 👑 Administrador [ADM]
+        '1365634226254254150',  # 🛠️ Staff [STF]
+        '1365633102973763595',  # ⚔️ Moderador [MOD]
+        '1365631940434333748',  # 🛡️ Sub Moderador [SBM]
+    ]
+    
     try:
         response = requests.get(
             f'{DISCORD_API_URL}/guilds/{GUILD_ID}/roles',
@@ -348,14 +358,15 @@ def get_discord_roles():
         
         if response.status_code == 200:
             roles = response.json()
-            # Ordenar por posição
-            sorted_roles = sorted(roles, key=lambda r: r.get('position', 0), reverse=True)
-            role_list = [
+            # Filtrar APENAS os cargos de staff
+            staff_roles = [
                 {'id': r['id'], 'name': r['name'], 'color': r.get('color', 0)}
-                for r in sorted_roles
-                if r['name'] != '@everyone'
+                for r in roles
+                if r['id'] in STAFF_ROLE_IDS
             ]
-            return jsonify(role_list)
+            # Ordenar na ordem da hierarquia (mesma ordem do array STAFF_ROLE_IDS)
+            staff_roles.sort(key=lambda r: STAFF_ROLE_IDS.index(r['id']))
+            return jsonify(staff_roles)
         
         return jsonify({'error': 'Erro ao buscar cargos'}), 500
     except Exception as e:
